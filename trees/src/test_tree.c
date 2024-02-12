@@ -16,18 +16,20 @@ typedef struct birth_rate {
 int sort_by_birth_rate(const void *one, const void *two);
 int sort_by_date(const void *one, const void *two);
 void print_birth_rate(const void *ptr);
-birth_rate_t *initialize_birth_rate_t(int year, int month, int day, int day_of_week, int births);
+birth_rate_t *initialize_birth_rate_t(int year, int month, int day,
+				      int day_of_week, int births);
 void destroy_birth_rate_t(void *brt);
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	puts("setup");
-	char *file = argc==2 ? argv[1] : "births.csv";
+	char *file = argc == 2 ? argv[1] : "births.csv";
 	FILE *fp = fopen(file, "r");
 	if (NULL == fp) {
 		return 1;
 	}
-	tree_t *birth_tree = tree_initialize(sort_by_birth_rate, destroy_birth_rate_t);
+	tree_t *birth_tree =
+	    tree_initialize(sort_by_birth_rate, destroy_birth_rate_t);
 	if (birth_tree == NULL) {
 		fclose(fp);
 		return 2;
@@ -45,7 +47,9 @@ int main(int argc, char* argv[])
 		//tree_print(birth_tree,print_birth_rate);
 		//sleep(2);
 		sscanf(buffer, "%d,%d,%d,%d,%d", &year, &month, &day, &day_of_week, &births);	//could do an if check on values read to check validity
-		birth_rate_t *tmp = initialize_birth_rate_t(year,month,day,day_of_week,births);
+		birth_rate_t *tmp =
+		    initialize_birth_rate_t(year, month, day, day_of_week,
+					    births);
 		avl_add(birth_tree, tmp);
 	}
 	tree_print(birth_tree, print_birth_rate);
@@ -62,38 +66,44 @@ int main(int argc, char* argv[])
 	tree_destroy(&birth_tree);
 }
 
-int sort_by_birth_rate(const void *left, const void *right){
-	birth_rate_t* left_brt = (birth_rate_t*) left;
-	birth_rate_t* right_brt = (birth_rate_t*) right;
+int sort_by_birth_rate(const void *left, const void *right)
+{
+	birth_rate_t *left_brt = (birth_rate_t *) left;
+	birth_rate_t *right_brt = (birth_rate_t *) right;
 	return left_brt->births - right_brt->births;
 }
 
-int sort_by_date(const void *left, const void *right){
-	birth_rate_t* left_brt = (birth_rate_t*) left;
-	birth_rate_t* right_brt = (birth_rate_t*) right;
+int sort_by_date(const void *left, const void *right)
+{
+	birth_rate_t *left_brt = (birth_rate_t *) left;
+	birth_rate_t *right_brt = (birth_rate_t *) right;
 	int comp = left_brt->year - right_brt->year;
-	if (0 != comp){
+	if (0 != comp) {
 		goto EXIT;
 	}
-	comp = left_brt->month - right_brt->month;	
-	if (0 != comp){
+	comp = left_brt->month - right_brt->month;
+	if (0 != comp) {
 		goto EXIT;
 	}
 	comp = left_brt->day - right_brt->day;
-	if (0 != comp){
+	if (0 != comp) {
 		goto EXIT;
 	}
-	EXIT:
+ EXIT:
 	return comp;
 }
-void print_birth_rate(const void *ptr){
-	birth_rate_t *brt = (birth_rate_t*)ptr;
-	printf("%d/%d/%d: %d",brt->day, brt->month, brt->year, brt->births);
+
+void print_birth_rate(const void *ptr)
+{
+	birth_rate_t *brt = (birth_rate_t *) ptr;
+	printf("%d/%d/%d: %d", brt->day, brt->month, brt->year, brt->births);
 }
-birth_rate_t *initialize_birth_rate_t(int year, int month, int day, int day_of_week, int births)
+
+birth_rate_t *initialize_birth_rate_t(int year, int month, int day,
+				      int day_of_week, int births)
 {
 	birth_rate_t *brt = calloc(1, sizeof(*brt));
-	if (NULL == brt){
+	if (NULL == brt) {
 		return NULL;
 	}
 	brt->year = year;
@@ -103,6 +113,8 @@ birth_rate_t *initialize_birth_rate_t(int year, int month, int day, int day_of_w
 	brt->births = births;
 	return brt;
 }
-void destroy_birth_rate_t(void *brt){
+
+void destroy_birth_rate_t(void *brt)
+{
 	free(brt);
 }

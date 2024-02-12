@@ -53,8 +53,11 @@ dkms.conf
 
 
 
-moduel-l/*
+module-l/*
 notes
-class_work/
+DSA_pi/*
+class_work/*
 project*/*
 
+*~
+.swap

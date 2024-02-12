@@ -13,7 +13,9 @@
 
 //for printing tree and color coding the layers
 static char *colors[] =
-    { ANSI_BRIGHT_WHITE, ANSI_BRIGHT_MAGENTA, ANSI_BRIGHT_RED, ANSI_BRIGHT_YELLOW, ANSI_BRIGHT_GREEN, ANSI_BRIGHT_CYAN, ANSI_BRIGHT_BLUE, ANSI_BRIGHT_BLACK };
+    { ANSI_BRIGHT_WHITE, ANSI_BRIGHT_MAGENTA, ANSI_BRIGHT_RED,
+ANSI_BRIGHT_YELLOW, ANSI_BRIGHT_GREEN, ANSI_BRIGHT_CYAN, ANSI_BRIGHT_BLUE,
+ANSI_BRIGHT_BLACK };
 
 //compare function to be registered
 typedef int (*comp_f)(const void *, const void *);
@@ -140,14 +142,18 @@ static node_t *node_delete(node_t * node, dest_f destroy_f)
 		//if the node only has a right child
 	} else if (NULL == node->left) {
 		node_t *temp = node->right;
-		destroy_f(node->data);
+		if (NULL != destroy_f) {
+			destroy_f(node->data);
+		}
 		free(node);
 		node = temp;
 		goto EXIT;
 		//if the node only has a left child
 	} else if (NULL == node->right) {
 		node_t *temp = node->left;
-		destroy_f(node->data);
+		if (NULL != destroy_f) {
+			destroy_f(node->data);
+		}
 		free(node);
 		node = temp;
 		goto EXIT;
@@ -156,7 +162,9 @@ static node_t *node_delete(node_t * node, dest_f destroy_f)
 		//if the left child has not right child
 		if (NULL == node->left->right) {
 			node_t *temp = node->left;
-			destroy_f(node->data);
+			if (NULL != destroy_f) {
+				destroy_f(node->data);
+			}
 			node->data = node->left->data;
 			node->left = node->left->left;
 			free(temp);
@@ -168,7 +176,9 @@ static node_t *node_delete(node_t * node, dest_f destroy_f)
 		while (NULL != temp->right->right) {
 			temp = temp->right;
 		}
-		destroy_f(node->data);
+		if (NULL != destroy_f) {
+			destroy_f(node->data);
+		}
 		node->data = temp->right->data;
 		node_t *to_free = temp->right;
 		temp->right = temp->right->left;
@@ -199,7 +209,8 @@ static node_t *node_delete(node_t * node, dest_f destroy_f)
  * the node itself is returned.
  * If the node provided was NULL, then NULL is returned.
  */
-static node_t *node_remove(node_t * node, void *data, int *success, comp_f compare_f, dest_f destroy_f)
+static node_t *node_remove(node_t * node, void *data, int *success,
+			   comp_f compare_f, dest_f destroy_f)
 {
 	if (NULL == node) {
 		return NULL;
@@ -207,9 +218,17 @@ static node_t *node_remove(node_t * node, void *data, int *success, comp_f compa
 	//find and delete
 	int comp = compare_f(node->data, data);
 	if (comp < 0) {
-		node->right = node_remove(node->right, data, success, compare_f, destroy_f);
+		node->right =
+		    node_remove(node->right, data, success, compare_f,
+				destroy_f);
+		node->height =
+		    node->right == NULL ? 0 : get_height(node->right) + 1;
 	} else if (comp > 0) {
-		node->left = node_remove(node->left, data, success, compare_f, destroy_f);
+		node->left =
+		    node_remove(node->left, data, success, compare_f,
+				destroy_f);
+		node->height =
+		    node->left == NULL ? 0 : get_height(node->left) + 1;
 	} else {
 		*success = 1;
 		return node_delete(node, destroy_f);
@@ -220,21 +239,20 @@ static node_t *node_remove(node_t * node, void *data, int *success, comp_f compa
 		if (get_balance_factor(node->right) > 0) {
 			// puts("RIGHT LEFT");
 			node->right = right_rotation(node->right);
-		} else {
-			// puts("RIGHT RIGHT");
 		}
+		// puts("RIGHT RIGHT");
 		node = left_rotation(node);
 		break;
 	case 2:
 		if (get_balance_factor(node->left) < 0) {
 			// puts("LEFT RIGHT");
 			node->left = left_rotation(node->left);
-		} else {
-			// puts("LEFT LEFT");
 		}
+		// puts("LEFT LEFT");
 		node = right_rotation(node);
 		break;
 	default:
+		printf("bf:%d\n", get_balance_factor(node));
 		break;
 	}
 	return node;
@@ -242,7 +260,7 @@ static node_t *node_remove(node_t * node, void *data, int *success, comp_f compa
 
 static void node_print(node_t * node, int stop, void (*print_f)(const void *))
 {
-	if (NULL == node) {
+	if(NULL == node) {
 		return;
 	}
 	//recursively call right
@@ -258,18 +276,19 @@ static void node_print(node_t * node, int stop, void (*print_f)(const void *))
 	if (stop) {
 		printf("%s╠══", colors[i % 8]);
 	}
-	
 	//print data and then reset color
 	print_f(node->data);
+	printf(" (%d)", node->height);
 	puts("\x1b[0m");
 
 	//recursively call left
 	node_print(node->left, stop + 1, print_f);
 }
 
-static void node_apply_to_all(node_t * node, void (*action_f)(void *), int reverse)
+static void node_apply_to_all(node_t * node, void (*action_f)(void *),
+			      int reverse)
 {
-	if (NULL == node) {
+	if(NULL == node) {
 		return;
 	}
 	if (reverse) {
@@ -323,11 +342,13 @@ static void *node_add(node_t * root, node_t * node, comp_f compare_f)
 
 	int left_height = get_height(root->left);
 	int right_height = get_height(root->right);
-	root->height = right_height > left_height ? right_height + 1 : left_height + 1;
+	root->height =
+	    right_height > left_height ? right_height + 1 : left_height + 1;
 	return root;
 }
 
-void tree_register_compare(tree_t * tree, int (*comp_f)(const void *, const void *))
+void tree_register_compare(tree_t * tree,
+			   int (*comp_f)(const void *, const void *))
 {
 	tree->compare_f = comp_f;
 }
@@ -340,23 +361,22 @@ void tree_register_destroy(tree_t * tree, void (*dest_f)(void *))
 tree_t *tree_initialize(comp_f compare_f, dest_f destroy_f)
 {
 	tree_t *tree = NULL;
-	if (NULL == compare_f){
+	if (NULL == compare_f) {
 		goto EXIT;
 	}
-	tree =  calloc(1, sizeof(tree_t));
-	if (NULL == tree){
+	tree = calloc(1, sizeof(tree_t));
+	if (NULL == tree) {
 		goto EXIT;
 	}
 	tree->compare_f = compare_f;
 	tree->destroy_f = destroy_f;
-	EXIT:
+ EXIT:
 	return tree;
 }
 
-
 void tree_apply_to_all(tree_t * tree, void (*action_f)(void *), int reverse)
 {
-	if (NULL == tree || NULL == action_f) {
+	if(NULL == tree || NULL == action_f) {
 		return;
 	}
 	node_t *node = tree->root;
@@ -419,7 +439,9 @@ int tree_remove(tree_t * tree, void *data)
 		return 0;
 	}
 	int success = 0;
-	tree->root = node_remove(tree->root, data, &success, tree->compare_f, tree->destroy_f);
+	tree->root =
+	    node_remove(tree->root, data, &success, tree->compare_f,
+			tree->destroy_f);
 	if (success) {
 		tree->size--;
 	}
