@@ -50,3 +50,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+
+module-l/*
+notes
+DSA_pi/*
+class_work/*
+project*/*
+
+*~
+.swap
