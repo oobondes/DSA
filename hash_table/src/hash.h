@@ -71,4 +71,11 @@ void hash_table_print(hashtable_t * table, void (*print_f)(const void *));
 */
 void hash_table_destroy(hashtable_t ** table, void (*destroy_f)(void *));
 
+/*
+*@brief iterates through the hash table and runs the supplied function against all data elements stored in the table.
+*
+*@param hashtable_t The table to be iterated through. 
+*@param func_f the function to apply to each data element stored in the table.
+*/
+void hash_table_iter(hashtable_t* table, void (*func_f)(void*));
 #endif

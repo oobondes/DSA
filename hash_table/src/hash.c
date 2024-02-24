@@ -206,3 +206,14 @@ static int rehash(hashtable_t* table){
     EXIT:
     return rv;
 }
+
+void hash_table_iter(hashtable_t* table, void (*func_f)(void*)){
+    if(NULL == table){
+        return;
+    }
+    for (int i = 0; i < table->capacity; ++i){
+        if (table->elements[i].data > DELETED){
+            func_f(table->elements[i].data);
+        }
+    }
+}
